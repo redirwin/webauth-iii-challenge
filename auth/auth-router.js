@@ -1,8 +1,10 @@
 const router = require("express").Router();
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const Users = require("../users/users-model.js");
 const restricted = require("./restricted-middleware.js");
+const secrets = require("../config/secrets.js");
 
 router.get("/users", restricted, (req, res) => {
   Users.find()
@@ -37,7 +39,10 @@ router.post("/login", (req, res) => {
       if (user && bcrypt.compareSync(password, user.password)) {
         req.session.userId = user.id;
         req.session.loggedIn = true;
-        res.status(200).json({ message: `${user.username} logged in.` });
+
+        const token = createToken(user);
+
+        res.status(200).json({ message: `${user.username} logged in.`, token });
       } else {
         res.status(401).json({ message: "You shall not pass!" });
       }
@@ -46,6 +51,16 @@ router.post("/login", (req, res) => {
       res.status(500).json({ message: "Failed to log in." });
     });
 });
+
+function createToken(user) {
+  const payload = {
+    subject: user.id
+  };
+  const options = {
+    expiresIn: "8h"
+  };
+  return jwt.sign(payload, secrets.jwtSecret, options);
+}
 
 router.get("/logout", (req, res) => {
   if (req.session) {

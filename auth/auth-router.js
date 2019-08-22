@@ -17,21 +17,21 @@ function createToken(user) {
   return jwt.sign(payload, secrets.jwtSecret, options);
 }
 
-router.get("/user", restricted, (req, res) => {
-  if (req.session.userId) {
-    Users.findById(req.session.userId)
-      .then(user => {
-        res.json(user);
-      })
-      .catch(err =>
-        res.status(500).json({
-          message: "There was an error getting the user information."
-        })
-      );
-  } else {
-    res.status(400).json({ message: "There is no logged-in user." });
-  }
-});
+// router.get("/user", restricted, (req, res) => {
+//   if (req.session.userId) {
+//     Users.findById(req.session.userId)
+//       .then(user => {
+//         res.json(user);
+//       })
+//       .catch(err =>
+//         res.status(500).json({
+//           message: "There was an error getting the user information."
+//         })
+//       );
+//   } else {
+//     res.status(400).json({ message: "There is no logged-in user." });
+//   }
+// });
 
 router.post("/register", (req, res) => {
   let user = req.body;
@@ -67,20 +67,6 @@ router.post("/login", (req, res) => {
     .catch(err => {
       res.status(500).json({ message: "Failed to log in." });
     });
-});
-
-router.get("/logout", (req, res) => {
-  if (req.session) {
-    req.session.destroy(err => {
-      if (err) {
-        res.json({ message: "unable to log out" });
-      } else {
-        res.status(200).json({ message: "Logged out." });
-      }
-    });
-  } else {
-    res.status(200).json({ message: "Not logged in." });
-  }
 });
 
 module.exports = router;

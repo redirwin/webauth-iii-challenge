@@ -10,7 +10,9 @@ module.exports = (req, res, next) => {
       if (error) {
         res.status(401).json({ message: "The token is not valid." });
       } else {
-        req.user = { username: decodedToken.username };
+        req.userId = decodedToken.subject;
+        req.userName = decodedToken.username;
+        // don't send password
         next();
       }
     });

@@ -15,4 +15,12 @@ router.get("/", restricted, (req, res) => {
     .catch(err => res.send(err));
 });
 
+router.get("/all", restricted, (req, res) => {
+  Users.find()
+    .then(allUsers => {
+      res.status(500).json(allUsers);
+    })
+    .catch(err => res.send(err));
+});
+
 module.exports = router;

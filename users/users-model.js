@@ -20,11 +20,14 @@ function find() {
 }
 
 function findBy(filter) {
-  return db("users").where({ department: filter });
+  return db("users")
+    .where({ department: filter })
+    .select("id", "username", "department");
 }
 
 function findById(id) {
   return db("users")
     .where({ id })
+    .select("id", "username", "department")
     .first();
 }

@@ -8,7 +8,7 @@ router.get("/", restricted, (req, res) => {
   Users.findById(req.userId)
     .then(loggedInUser => {
       // then get only the users who are in the same dept
-      Users.findBy(loggedInUser.department).then(users => {
+      Users.inDept(loggedInUser.department).then(users => {
         res.status(500).json({ ...loggedInUser, usersInDept: users });
       });
     })

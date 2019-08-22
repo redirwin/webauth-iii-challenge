@@ -6,19 +6,36 @@ const Users = require("../users/users-model.js");
 const restricted = require("./restricted-middleware.js");
 const secrets = require("../config/secrets.js");
 
-router.get("/users", restricted, (req, res) => {
-  Users.find()
-    .then(users => {
-      res.json(users);
-    })
-    .catch(err => res.send(err));
+function createToken(user) {
+  const payload = {
+    subject: user.id,
+    username: user.username
+  };
+  const options = {
+    expiresIn: "8h"
+  };
+  return jwt.sign(payload, secrets.jwtSecret, options);
+}
+
+router.get("/user", restricted, (req, res) => {
+  if (req.session.userId) {
+    Users.findById(req.session.userId)
+      .then(user => {
+        res.json(user);
+      })
+      .catch(err =>
+        res.status(500).json({
+          message: "There was an error getting the user information."
+        })
+      );
+  } else {
+    res.status(400).json({ message: "There is no logged-in user." });
+  }
 });
 
 router.post("/register", (req, res) => {
   let user = req.body;
-
   const hash = bcrypt.hashSync(user.password, 12);
-
   user.password = hash;
 
   Users.add(user)
@@ -37,8 +54,8 @@ router.post("/login", (req, res) => {
     .first()
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
-        req.session.userId = user.id;
-        req.session.loggedIn = true;
+        // req.session.userId = user.id;
+        // req.session.loggedIn = true;
 
         const token = createToken(user);
 
@@ -52,16 +69,6 @@ router.post("/login", (req, res) => {
     });
 });
 
-function createToken(user) {
-  const payload = {
-    subject: user.id
-  };
-  const options = {
-    expiresIn: "8h"
-  };
-  return jwt.sign(payload, secrets.jwtSecret, options);
-}
-
 router.get("/logout", (req, res) => {
   if (req.session) {
     req.session.destroy(err => {
@@ -73,28 +80,6 @@ router.get("/logout", (req, res) => {
     });
   } else {
     res.status(200).json({ message: "Not logged in." });
-  }
-});
-
-router.get("/restest", (req, res) => {
-  res
-    .status(400)
-    .json({ message: "You have sucessfully accessed a restricted route." });
-});
-
-router.get("/user", (req, res) => {
-  if (req.session.userId) {
-    Users.findById(req.session.userId)
-      .then(user => {
-        res.json(user);
-      })
-      .catch(err =>
-        res.status(500).json({
-          message: "There was an error getting the user information."
-        })
-      );
-  } else {
-    res.status(400).json({ message: "There is no logged-in user." });
   }
 });
 

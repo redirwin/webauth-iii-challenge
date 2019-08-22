@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const Users = require("../users/users-model.js");
-const restricted = require("./restricted-middleware.js");
 const secrets = require("../config/secrets.js");
 
 function createToken(user) {
@@ -16,22 +15,6 @@ function createToken(user) {
   };
   return jwt.sign(payload, secrets.jwtSecret, options);
 }
-
-// router.get("/user", restricted, (req, res) => {
-//   if (req.session.userId) {
-//     Users.findById(req.session.userId)
-//       .then(user => {
-//         res.json(user);
-//       })
-//       .catch(err =>
-//         res.status(500).json({
-//           message: "There was an error getting the user information."
-//         })
-//       );
-//   } else {
-//     res.status(400).json({ message: "There is no logged-in user." });
-//   }
-// });
 
 router.post("/register", (req, res) => {
   let user = req.body;
